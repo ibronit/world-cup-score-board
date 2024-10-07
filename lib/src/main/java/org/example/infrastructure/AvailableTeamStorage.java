@@ -7,5 +7,5 @@ import org.example.domain.Team;
 public interface AvailableTeamStorage {
   Team put(Team teamName);
   Optional<Team> take(UUID id);
-  int count();
+  long count();
 }

@@ -30,7 +30,7 @@ public class InMemoryAvailableTeamStorage implements AvailableTeamStorage {
   }
 
   @Override
-  public int count() {
-    return availableTeams.size();
+  public long count() {
+    return availableTeams.mappingCount();
   }
 }
