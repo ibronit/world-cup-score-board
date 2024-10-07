@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.time.Instant;
 import java.util.UUID;
 import org.example.domain.Match;
 import org.example.domain.Team;
@@ -18,7 +19,7 @@ class InMemoryOngoingMatchStorageTest {
     var storage = new InMemoryOngoingMatchStorage();
     var homeTeam = new Team(UUID.randomUUID(), "Austria");
     var visitorTeam = new Team(UUID.randomUUID(), "England");
-    Match match = storage.addMatch(new Match(homeTeam, visitorTeam));
+    Match match = storage.addMatch(new Match(homeTeam, visitorTeam, Instant.parse("2024-10-07T12:00:00Z")));
 
     assertNotNull(match);
     assertEquals(1, storage.countOfOngoingMatches(), "There should be one match in the OngoingMatchStorage");
@@ -29,7 +30,7 @@ class InMemoryOngoingMatchStorageTest {
     var storage = new InMemoryOngoingMatchStorage();
     var homeTeam = new Team(UUID.randomUUID(), "Austria");
     var visitorTeam = new Team(UUID.randomUUID(), "England");
-    var match = new Match(homeTeam, visitorTeam);
+    var match = new Match(homeTeam, visitorTeam, Instant.parse("2024-10-07T12:00:00Z"));
     // Add the match
     storage.addMatch(match);
 
@@ -49,7 +50,7 @@ class InMemoryOngoingMatchStorageTest {
     var storage = new InMemoryOngoingMatchStorage();
     var homeTeam = new Team(UUID.randomUUID(), "Austria");
     var visitorTeam = new Team(UUID.randomUUID(), "England");
-    var match = new Match(homeTeam, visitorTeam);
+    var match = new Match(homeTeam, visitorTeam, Instant.parse("2024-10-07T12:00:00Z"));
     storage.addMatch(match);
 
     assertThrows(IllegalArgumentException.class, () -> storage.updateMatch(match.id(), -2, -1));
@@ -60,7 +61,7 @@ class InMemoryOngoingMatchStorageTest {
     var storage = new InMemoryOngoingMatchStorage();
     var homeTeam = new Team(UUID.randomUUID(), "Austria");
     var visitorTeam = new Team(UUID.randomUUID(), "England");
-    var match = new Match(homeTeam, visitorTeam);
+    var match = new Match(homeTeam, visitorTeam, Instant.parse("2024-10-07T12:00:00Z"));
     storage.addMatch(match);
 
     var updatedMatch = storage.updateMatch(match.id(), 2, 1);

@@ -1,5 +1,6 @@
 package org.example.domain;
 
+import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -7,12 +8,14 @@ public record Match(UUID id,
                     Team homeTeam,
                     Team visitorTeam,
                     int homeTeamScore,
-                    int visitorTeamScore) {
+                    int visitorTeamScore,
+                    Instant startTime) {
 
   public Match {
     Objects.requireNonNull(id);
     Objects.requireNonNull(homeTeam);
     Objects.requireNonNull(visitorTeam);
+    Objects.requireNonNull(startTime);
 
     if (homeTeam.id().equals(visitorTeam.id())) {
       throw new IllegalArgumentException("homeTeam cannot equal with the visitorTeam");
@@ -27,7 +30,7 @@ public record Match(UUID id,
     }
   }
 
-  public Match(Team homeTeam, Team visitorTeam) {
-    this(UUID.randomUUID(), homeTeam, visitorTeam, 0, 0);
+  public Match(Team homeTeam, Team visitorTeam, Instant startTime) {
+    this(UUID.randomUUID(), homeTeam, visitorTeam, 0, 0, startTime);
   }
 }

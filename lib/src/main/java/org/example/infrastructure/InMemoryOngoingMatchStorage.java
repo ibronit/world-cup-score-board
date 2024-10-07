@@ -26,7 +26,7 @@ public class InMemoryOngoingMatchStorage implements OngoingMatchStorage {
   @Override
   public Match updateMatch(UUID matchUuid, int homeTeamScore, int visitorTeamScore) {
     var updatedMatch = ongoingMatches.computeIfPresent(matchUuid,
-        (k, v) -> new Match(v.id(), v.homeTeam(), v.visitorTeam(), homeTeamScore, visitorTeamScore));
+        (k, v) -> new Match(v.id(), v.homeTeam(), v.visitorTeam(), homeTeamScore, visitorTeamScore, v.startTime()));
     if (updatedMatch == null) {
       throw new NotFoundException("Ongoing match is not present, it cannot be updated.");
     }
