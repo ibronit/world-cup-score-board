@@ -15,5 +15,7 @@ public interface OngoingMatchStorage {
 
   Match updateMatch(UUID matchUuid, int homeTeamScore, int visitorTeamScore);
 
+  Match finishMatch(UUID matchUuid);
+
   long countOfOngoingMatches();
 }

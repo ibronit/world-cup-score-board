@@ -34,6 +34,15 @@ public class InMemoryOngoingMatchStorage implements OngoingMatchStorage {
   }
 
   @Override
+  public Match finishMatch(UUID matchUuid) {
+    Match finishedMatch = ongoingMatches.remove(matchUuid);
+    if (finishedMatch == null) {
+      throw new NotFoundException("There is no ongoing match to delete with this uuid: " + matchUuid);
+    }
+    return finishedMatch;
+  }
+
+  @Override
   public long countOfOngoingMatches() {
     return ongoingMatches.mappingCount();
   }

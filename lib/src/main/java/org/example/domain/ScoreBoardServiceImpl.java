@@ -2,6 +2,7 @@ package org.example.domain;
 
 import java.util.UUID;
 import org.example.infrastructure.AvailableTeamStorage;
+import org.example.infrastructure.FinishedMatchStorage;
 import org.example.infrastructure.OngoingMatchStorage;
 import org.example.infrastructure.exceptions.NotFoundException;
 
@@ -9,10 +10,13 @@ public class ScoreBoardServiceImpl implements ScoreBoardService {
 
   private final OngoingMatchStorage ongoingMatchStorage;
   private final AvailableTeamStorage availableTeamStorage;
+  private final FinishedMatchStorage finishedMatchStorage;
 
-  public ScoreBoardServiceImpl(OngoingMatchStorage ongoingMatchStorage, AvailableTeamStorage availableTeamStorage) {
+  public ScoreBoardServiceImpl(OngoingMatchStorage ongoingMatchStorage, AvailableTeamStorage availableTeamStorage,
+      FinishedMatchStorage finishedMatchStorage) {
     this.ongoingMatchStorage = ongoingMatchStorage;
     this.availableTeamStorage = availableTeamStorage;
+    this.finishedMatchStorage = finishedMatchStorage;
   }
 
   @Override
@@ -28,6 +32,12 @@ public class ScoreBoardServiceImpl implements ScoreBoardService {
   @Override
   public Match updateOngoingMatch(UUID matchUuid, int homeTeamScore, int visitorTeamScore) {
     return ongoingMatchStorage.updateMatch(matchUuid, homeTeamScore, visitorTeamScore);
+  }
+
+  @Override
+  public synchronized void finishMatch(UUID matchUuid) {
+    Match finishedMatch = ongoingMatchStorage.finishMatch(matchUuid);
+    finishedMatchStorage.addMatch(finishedMatch);
   }
 
   @Override

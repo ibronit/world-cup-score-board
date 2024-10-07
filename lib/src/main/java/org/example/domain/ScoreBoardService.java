@@ -8,5 +8,7 @@ public interface ScoreBoardService {
 
   Match updateOngoingMatch(UUID matchUuid, int homeTeamScore, int visitorTeamScore);
 
+  void finishMatch(UUID matchUuid);
+
   long countOfOngoingMatches();
 }

@@ -8,7 +8,9 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.example.infrastructure.AvailableTeamStorage;
+import org.example.infrastructure.FinishedMatchStorage;
 import org.example.infrastructure.InMemoryAvailableTeamStorage;
+import org.example.infrastructure.InMemoryFinishedMatchStorage;
 import org.example.infrastructure.InMemoryOngoingMatchStorage;
 import org.example.infrastructure.OngoingMatchStorage;
 import org.example.infrastructure.exceptions.NotFoundException;
@@ -19,6 +21,7 @@ class ScoreBoardServiceImplIT {
 
   private OngoingMatchStorage inMemoryOngoingMatchStorage;
   private AvailableTeamStorage inMemoryAvailableTeamStorage;
+  private FinishedMatchStorage finishedMatchStorage;
 
   private ScoreBoardService scoreBoardService;
 
@@ -26,7 +29,9 @@ class ScoreBoardServiceImplIT {
   void init() {
     this.inMemoryOngoingMatchStorage = new InMemoryOngoingMatchStorage();
     this.inMemoryAvailableTeamStorage = new InMemoryAvailableTeamStorage();
-    this.scoreBoardService = new ScoreBoardServiceImpl(this.inMemoryOngoingMatchStorage, this.inMemoryAvailableTeamStorage);
+    this.finishedMatchStorage = new InMemoryFinishedMatchStorage();
+    this.scoreBoardService = new ScoreBoardServiceImpl(this.inMemoryOngoingMatchStorage,
+        this.inMemoryAvailableTeamStorage, this.finishedMatchStorage);
   }
 
   @Test
@@ -70,7 +75,11 @@ class ScoreBoardServiceImplIT {
     // start game
     var executor = Executors.newVirtualThreadPerTaskExecutor();
     for (int i = 0; i < 10; i++) {
-      executor.execute(() -> scoreBoardService.startNewMatch(homeTeamUuid, visitorTeamUuid));
+      executor.execute(() -> {
+        try {
+          scoreBoardService.startNewMatch(homeTeamUuid, visitorTeamUuid);
+        } catch (Exception ignore) {}
+      });
     }
     executor.awaitTermination(1, TimeUnit.SECONDS);
 
@@ -109,5 +118,29 @@ class ScoreBoardServiceImplIT {
     assertEquals(1, scoreBoardService.countOfOngoingMatches(), "Exactly 1 team should play");
     assertEquals(4, updatedMatch.homeTeamScore());
     assertEquals(1, updatedMatch.visitorTeamScore());
+  }
+
+  @Test
+  void shouldFinishMatch() {
+    var homeTeamUuid = UUID.randomUUID();
+    var visitorTeamUuid = UUID.randomUUID();
+    inMemoryAvailableTeamStorage.put(new Team(homeTeamUuid, "Austria"));
+    inMemoryAvailableTeamStorage.put(new Team(visitorTeamUuid, "England"));
+
+    Match match = scoreBoardService.startNewMatch(homeTeamUuid, visitorTeamUuid);
+
+    assertNotNull(match);
+    assertEquals(1, scoreBoardService.countOfOngoingMatches(), "Exactly 1 team should play");
+    assertEquals(0, match.homeTeamScore());
+    assertEquals(0, match.visitorTeamScore());
+
+    Match updatedMatch = scoreBoardService.updateOngoingMatch(match.id(), 4, 1);
+    assertNotNull(updatedMatch);
+    assertEquals(1, scoreBoardService.countOfOngoingMatches(), "Exactly 1 team should play");
+    assertEquals(4, updatedMatch.homeTeamScore());
+    assertEquals(1, updatedMatch.visitorTeamScore());
+
+    scoreBoardService.finishMatch(match.id());
+    assertEquals(0, scoreBoardService.countOfOngoingMatches(), "Exactly 0 team should play");
   }
 }
