@@ -26,6 +26,11 @@ public class ScoreBoardServiceImpl implements ScoreBoardService {
   }
 
   @Override
+  public Match updateOngoingMatch(UUID matchUuid, int homeTeamScore, int visitorTeamScore) {
+    return ongoingMatchStorage.updateMatch(matchUuid, homeTeamScore, visitorTeamScore);
+  }
+
+  @Override
   public long countOfOngoingMatches() {
     return ongoingMatchStorage.countOfOngoingMatches();
   }

@@ -4,6 +4,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.example.domain.Match;
 import org.example.infrastructure.exceptions.AlreadyExistsException;
+import org.example.infrastructure.exceptions.NotFoundException;
 
 public class InMemoryOngoingMatchStorage implements OngoingMatchStorage {
 
@@ -20,6 +21,16 @@ public class InMemoryOngoingMatchStorage implements OngoingMatchStorage {
       throw new AlreadyExistsException("Match is already started.");
     }
     return match;
+  }
+
+  @Override
+  public Match updateMatch(UUID matchUuid, int homeTeamScore, int visitorTeamScore) {
+    var updatedMatch = ongoingMatches.computeIfPresent(matchUuid,
+        (k, v) -> new Match(v.id(), v.homeTeam(), v.visitorTeam(), homeTeamScore, visitorTeamScore));
+    if (updatedMatch == null) {
+      throw new NotFoundException("Ongoing match is not present, it cannot be updated.");
+    }
+    return updatedMatch;
   }
 
   @Override

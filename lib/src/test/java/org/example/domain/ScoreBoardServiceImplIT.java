@@ -89,4 +89,25 @@ class ScoreBoardServiceImplIT {
     assertNotNull(match);
     assertEquals(1, scoreBoardService.countOfOngoingMatches(), "Exactly 1 team should play");
   }
+
+  @Test
+  void shouldUpdateMatch() {
+    var homeTeamUuid = UUID.randomUUID();
+    var visitorTeamUuid = UUID.randomUUID();
+    inMemoryAvailableTeamStorage.put(new Team(homeTeamUuid, "Austria"));
+    inMemoryAvailableTeamStorage.put(new Team(visitorTeamUuid, "England"));
+
+    Match match = scoreBoardService.startNewMatch(homeTeamUuid, visitorTeamUuid);
+
+    assertNotNull(match);
+    assertEquals(1, scoreBoardService.countOfOngoingMatches(), "Exactly 1 team should play");
+    assertEquals(0, match.homeTeamScore());
+    assertEquals(0, match.visitorTeamScore());
+
+    Match updatedMatch = scoreBoardService.updateOngoingMatch(match.id(), 4, 1);
+    assertNotNull(updatedMatch);
+    assertEquals(1, scoreBoardService.countOfOngoingMatches(), "Exactly 1 team should play");
+    assertEquals(4, updatedMatch.homeTeamScore());
+    assertEquals(1, updatedMatch.visitorTeamScore());
+  }
 }

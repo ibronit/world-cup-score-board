@@ -1,5 +1,6 @@
 package org.example.infrastructure;
 
+import java.util.UUID;
 import org.example.domain.Match;
 import org.example.infrastructure.exceptions.AlreadyExistsException;
 
@@ -11,6 +12,8 @@ public interface OngoingMatchStorage {
    * @throws AlreadyExistsException if match is already added
    */
   Match addMatch(Match match);
+
+  Match updateMatch(UUID matchUuid, int homeTeamScore, int visitorTeamScore);
 
   long countOfOngoingMatches();
 }
