@@ -8,11 +8,7 @@ import org.example.infrastructure.exceptions.NotFoundException;
 
 public class InMemoryOngoingMatchStorage implements OngoingMatchStorage {
 
-  private final ConcurrentHashMap<UUID, Match> ongoingMatches;
-
-  public InMemoryOngoingMatchStorage() {
-    this.ongoingMatches = new ConcurrentHashMap<>();
-  }
+  private final ConcurrentHashMap<UUID, Match> ongoingMatches = new ConcurrentHashMap<>();
 
   @Override
   public Match addMatch(Match match) {

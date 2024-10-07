@@ -9,11 +9,7 @@ import org.example.infrastructure.exceptions.NotFoundException;
 
 public class InMemoryAvailableTeamStorage implements AvailableTeamStorage {
 
-  private ConcurrentHashMap<UUID, Team> availableTeams;
-
-  public InMemoryAvailableTeamStorage() {
-    this.availableTeams = new ConcurrentHashMap<>();
-  }
+  private final ConcurrentHashMap<UUID, Team> availableTeams = new ConcurrentHashMap<>();
 
   @Override
   public Team put(Team team) {
