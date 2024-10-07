@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -148,6 +150,8 @@ class ScoreBoardServiceImplIT {
 
     scoreBoardService.finishMatch(match.id());
     assertEquals(0, scoreBoardService.countOfOngoingMatches(), "Exactly 0 team should play");
+    long countOfAvailableTeams = inMemoryAvailableTeamStorage.count();
+    assertEquals(2, countOfAvailableTeams);
   }
 
   @Test
@@ -196,5 +200,48 @@ class ScoreBoardServiceImplIT {
     assertEquals(match2.id(), summary.get(1).id());
     assertEquals(match3.id(), summary.get(2).id());
     assertEquals(match4.id(), summary.get(3).id());
+  }
+
+  @Test
+  void shouldStoragesRemainConsistent_whenStartingAndFinishingMatchesConcurrently() throws InterruptedException {
+    var homeTeam1Uuid = UUID.randomUUID();
+    var visitorTeam1Uuid = UUID.randomUUID();
+    var homeTeam2Uuid = UUID.randomUUID();
+    var visitorTeam2Uuid = UUID.randomUUID();
+    var homeTeam3Uuid = UUID.randomUUID();
+    var visitorTeam3Uuid = UUID.randomUUID();
+    var homeTeam4Uuid = UUID.randomUUID();
+    var visitorTeam4Uuid = UUID.randomUUID();
+    inMemoryAvailableTeamStorage.put(new Team(homeTeam1Uuid, "Austria"));
+    inMemoryAvailableTeamStorage.put(new Team(visitorTeam1Uuid, "England"));
+    inMemoryAvailableTeamStorage.put(new Team(homeTeam2Uuid, "France"));
+    inMemoryAvailableTeamStorage.put(new Team(visitorTeam2Uuid, "Belgium"));
+    inMemoryAvailableTeamStorage.put(new Team(homeTeam3Uuid, "Turkey"));
+    inMemoryAvailableTeamStorage.put(new Team(visitorTeam3Uuid, "Hungary"));
+    inMemoryAvailableTeamStorage.put(new Team(homeTeam4Uuid, "USA"));
+    inMemoryAvailableTeamStorage.put(new Team(visitorTeam4Uuid, "Brazil"));
+
+    List<List<UUID>> tuples = new ArrayList<>();
+    tuples.add(Arrays.asList(homeTeam1Uuid, visitorTeam1Uuid));
+    tuples.add(Arrays.asList(homeTeam2Uuid, visitorTeam2Uuid));
+    tuples.add(Arrays.asList(homeTeam3Uuid, visitorTeam3Uuid));
+    tuples.add(Arrays.asList(homeTeam4Uuid, visitorTeam4Uuid));
+
+    var executor = Executors.newVirtualThreadPerTaskExecutor();
+    tuples.forEach(tuple -> executor.execute(() -> {
+      Match match = scoreBoardService.startNewMatch(tuple.get(0), tuple.get(1),
+          Instant.parse("2024-10-07T12:00:00Z"));
+      scoreBoardService.updateOngoingMatch(match.id(), 4, 1);
+      scoreBoardService.finishMatch(match.id());
+    }));
+    executor.awaitTermination(1, TimeUnit.SECONDS);
+
+    long countOfAvailableTeams = inMemoryAvailableTeamStorage.count();
+    assertEquals(8, countOfAvailableTeams);
+    long countOfOngoingMatches = inMemoryOngoingMatchStorage.countOfOngoingMatches();
+    assertEquals(0, countOfOngoingMatches);
+    List<Match> summary = scoreBoardService.getFinishedMatchSummary();
+    assertNotNull(summary);
+    assertEquals(4, summary.size());
   }
 }

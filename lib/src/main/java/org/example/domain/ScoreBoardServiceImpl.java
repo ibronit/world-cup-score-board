@@ -40,7 +40,13 @@ public class ScoreBoardServiceImpl implements ScoreBoardService {
   @Override
   public synchronized void finishMatch(UUID matchUuid) {
     Match finishedMatch = ongoingMatchStorage.finishMatch(matchUuid);
+    putBackTeams(finishedMatch);
     finishedMatchStorage.addMatch(finishedMatch);
+  }
+
+  private void putBackTeams(Match finishedMatch) {
+    availableTeamStorage.put(finishedMatch.homeTeam());
+    availableTeamStorage.put(finishedMatch.visitorTeam());
   }
 
   @Override
